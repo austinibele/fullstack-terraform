@@ -3,18 +3,24 @@ provider "aws" {
 }
 
 locals {
-  # Target port to expose
-  target_port = 3000
+  # Frontend configuration
+  frontend_port = 3000
+  frontend_container_name = "frontend"
+  frontend_memory = 512
+
+  # Backend configuration
+  backend_port = 5252
+  backend_container_name = "backend"
+  backend_memory = 512
 
   ## ECS Service config
   ecs_launch_type = "FARGATE"
   ecs_desired_count = 2
   ecs_network_mode = "awsvpc"
-  ecs_cpu = 512
+  ecs_cpu = 512  # This is shared between containers if using Fargate
+
   ecs_memory = 1024
-  ecs_container_name = "frontend"
   ecs_log_group = "/aws/ecs/${var.project_id}-${var.env}"
-  # Retention in days
   ecs_log_retention = 1
 }
 
@@ -48,18 +54,28 @@ resource "aws_security_group" "alb_ecs_sg" {
   ## Allow outbound to ecs instances in private subnet
   egress {
     protocol    = "tcp"
-    from_port   = local.target_port
-    to_port     = local.target_port
+    from_port   = local.frontend_port
+    to_port     = local.frontend_port
     cidr_blocks = module.networking.private_subnets[*].cidr_block
   }
 }
 
 resource "aws_security_group" "ecs_sg" {
   vpc_id = module.networking.vpc_id
+
+  # Frontend
   ingress {
     protocol         = "tcp"
-    from_port        = local.target_port
-    to_port          = local.target_port
+    from_port        = local.frontend_port
+    to_port          = local.frontend_port
+    security_groups  = [aws_security_group.alb_ecs_sg.id]
+  }
+
+  # Backend
+  ingress {
+    protocol         = "tcp"
+    from_port        = local.backend_port
+    to_port          = local.backend_port
     security_groups  = [aws_security_group.alb_ecs_sg.id]
   }
 
@@ -73,16 +89,27 @@ resource "aws_security_group" "ecs_sg" {
 }
 
 module "ecs_tg" {
-  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.25"
+  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
   create_target_group = true
-  port                = local.target_port
+  port                = local.frontend_port
   protocol            = "HTTP"
   target_type         = "ip"
   vpc_id              = module.networking.vpc_id
+  target_group_suffix = "frontend"
+}
+
+module "ecs_backend_tg" {
+  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
+  create_target_group = true
+  port                = local.backend_port
+  protocol            = "HTTP"
+  target_type         = "ip"
+  vpc_id              = module.networking.vpc_id
+  target_group_suffix = "backend"
 }
 
 module "alb" {
-  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.25"
+  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
   create_alb         = true
   enable_https       = false
   internal           = false
@@ -90,6 +117,7 @@ module "alb" {
   security_groups    = [aws_security_group.alb_ecs_sg.id]
   subnets            = module.networking.public_subnets[*].id
   target_group       = module.ecs_tg.tg.arn
+  target_group_suffix = ""
 }
 
 data "aws_caller_identity" "current" {}
@@ -130,15 +158,21 @@ data "template_file" "task_def_generated" {
   template = "${file("./task-definitions/service.json.tpl")}"
   vars = {
     env                 = var.env
-    port                = local.target_port
-    name                = local.ecs_container_name
-    cpu                 = local.ecs_cpu
-    memory              = local.ecs_memory
     aws_region          = var.aws_region
     ecs_execution_role  = module.ecs_roles.ecs_execution_role_arn
     launch_type         = local.ecs_launch_type
     network_mode        = local.ecs_network_mode
     log_group           = local.ecs_log_group
+    cpu                 = local.ecs_cpu
+    memory              = local.ecs_memory
+
+    frontend_name       = local.frontend_container_name
+    frontend_memory     = local.frontend_memory
+    frontend_port       = local.frontend_port
+
+    backend_name        = local.backend_container_name
+    backend_memory      = local.backend_memory
+    backend_port        = local.backend_port
   }
 }
 
@@ -172,8 +206,8 @@ resource "aws_ecs_service" "web_ecs_service" {
 
   load_balancer {
     target_group_arn = module.ecs_tg.tg.arn
-    container_name   = local.ecs_container_name
-    container_port   = local.target_port
+    container_name   = local.frontend_container_name
+    container_port   = local.frontend_port
   }
 
   network_configuration {

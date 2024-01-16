@@ -25,37 +25,55 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
+      - name: Build, tag, and push frontend image to Amazon ECR
+        id: build-frontend-image
         env:
             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            ECR_REPOSITORY: web/node-app
+            ECR_REPOSITORY: web/node-app-frontend
             IMAGE_TAG: ${{ github.sha }}
         run: |
             cd frontend && docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            echo "::set-output name=frontend-image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
+      - name: Build, tag, and push backend image to Amazon ECR
+        id: build-backend-image
+        env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: web/node-app-backend
+            IMAGE_TAG: ${{ github.sha }}
+        run: |
+            cd backend && docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            echo "::set-output name=backend-image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Fill in the new frontend image ID in the Amazon ECS task definition
+        id: task-def-frontend
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
             task-definition: infra/task-definitions/service.latest.json
             container-name: frontend 
-            image: ${{ steps.build-image.outputs.image }}
+            image: ${{ steps.build-frontend-image.outputs.frontend-image }}
+
+      - name: Fill in the new backend image ID in the Amazon ECS task definition
+        id: task-def-backend
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+            task-definition: ${{ steps.task-def-frontend.outputs.task-definition }}
+            container-name: backend 
+            image: ${{ steps.build-backend-image.outputs.backend-image }}
 
       - name: Update App Spec File
         run: |
-          sed -ie "s/<CONTAINER_NAME>/$CONTAINER_NAME/" ./appspec.json
-          sed -ie "s/<CONTAINER_PORT>/$CONTAINER_PORT/" ./appspec.json
-        env:
-          CONTAINER_NAME: frontend 
-          CONTAINER_PORT: 3000
+          sed -ie "s/<FRONTEND_CONTAINER_NAME>/frontend/" ./appspec.json
+          sed -ie "s/<FRONTEND_CONTAINER_PORT>/3000/" ./appspec.json
+          sed -ie "s/<BACKEND_CONTAINER_NAME>/backend/" ./appspec.json
+          sed -ie "s/<BACKEND_CONTAINER_PORT>/5252/" ./appspec.json
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition: ${{ steps.task-def-backend.outputs.task-definition }}
           service: web-service-node-app-prod
           cluster: web-cluster-node-app-prod
           wait-for-service-stability: true

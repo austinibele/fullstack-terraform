@@ -11,7 +11,7 @@
     {
       "name": "frontend",
       "image": "nginx:latest",
-      "memoryReservation": 1024,
+      "memoryReservation": 512,
       "portMappings": [
         {
           "containerPort": 3000,
@@ -29,7 +29,33 @@
         "options": {
           "awslogs-group": "/aws/ecs/node-app-prod",
           "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "ecs"
+          "awslogs-stream-prefix": "ecs-frontend"
+        }
+      },
+      "secrets": []
+    },
+    {
+      "name": "backend",
+      "image": "nginx:latest",
+      "memoryReservation": 512,
+      "portMappings": [
+        {
+          "containerPort": 5252,
+          "hostPort": 5252
+        }
+      ],
+      "environment": [
+        {
+          "name": "PORT",
+          "value": "5252"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/aws/ecs/node-app-prod",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs-backend"
         }
       },
       "secrets": []
