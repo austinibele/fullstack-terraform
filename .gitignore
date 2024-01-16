@@ -1,4 +1,7 @@
 .env
 infra/.terraform
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+infra/.terraform
 infra/.terraform.lock.hcl
 infra/.terraform.tfstate.lock.info

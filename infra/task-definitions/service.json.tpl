@@ -9,19 +9,19 @@
   "executionRoleArn": "${ecs_execution_role}",
   "containerDefinitions": [
     {
-      "name": "${frontend_name}",
+      "name": "${name}",
       "image": "nginx:latest",
-      "memoryReservation": ${frontend_memory},
+      "memoryReservation": ${memory},
       "portMappings": [
         {
-          "containerPort": ${frontend_port},
-          "hostPort": ${frontend_port}
+          "containerPort": ${port},
+          "hostPort": ${port}
         }
       ],
       "environment": [
         {
           "name": "PORT",
-          "value": "${frontend_port}"
+          "value": "${port}"
         }
       ],
       "logConfiguration": {
@@ -29,33 +29,7 @@
         "options": {
           "awslogs-group": "${log_group}",
           "awslogs-region": "${aws_region}",
-          "awslogs-stream-prefix": "ecs-frontend"
-        }
-      },
-      "secrets": []
-    },
-    {
-      "name": "${backend_name}",
-      "image": "nginx:latest",
-      "memoryReservation": ${backend_memory},
-      "portMappings": [
-        {
-          "containerPort": ${backend_port},
-          "hostPort": ${backend_port}
-        }
-      ],
-      "environment": [
-        {
-          "name": "PORT",
-          "value": "${backend_port}"
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "${log_group}",
-          "awslogs-region": "${aws_region}",
-          "awslogs-stream-prefix": "ecs-backend"
+          "awslogs-stream-prefix": "ecs"
         }
       },
       "secrets": []

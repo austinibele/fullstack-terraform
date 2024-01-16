@@ -9,9 +9,9 @@
   "executionRoleArn": "arn:aws:iam::349514606126:role/Policy-Ecs-Execution-Role",
   "containerDefinitions": [
     {
-      "name": "frontend",
+      "name": "nextjs-image",
       "image": "nginx:latest",
-      "memoryReservation": 512,
+      "memoryReservation": 1024,
       "portMappings": [
         {
           "containerPort": 3000,
@@ -29,33 +29,7 @@
         "options": {
           "awslogs-group": "/aws/ecs/node-app-prod",
           "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "ecs-frontend"
-        }
-      },
-      "secrets": []
-    },
-    {
-      "name": "backend",
-      "image": "nginx:latest",
-      "memoryReservation": 512,
-      "portMappings": [
-        {
-          "containerPort": 5252,
-          "hostPort": 5252
-        }
-      ],
-      "environment": [
-        {
-          "name": "PORT",
-          "value": "5252"
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/aws/ecs/node-app-prod",
-          "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "ecs-backend"
+          "awslogs-stream-prefix": "ecs"
         }
       },
       "secrets": []
