@@ -1,23 +1,13 @@
-# Use the official Node.js 16 image as a parent image
 FROM node:16-alpine
 
-# Set the working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install the project dependencies
-RUN npm install express
+COPY package*.json ./
 
-# Bundle the app source
+RUN npm install --only=production
+
 COPY . .
 
-# Add a simple ExpressJS app
-RUN echo "const express = require('express');" > index.js
-RUN echo "const app = express();" >> index.js
-RUN echo "app.get('/message', (req, res) => res.json({ message: 'Hello from Backend!' }));" >> index.js
-RUN echo "app.listen(5252, () => console.log('Backend listening on port 5252'));" >> index.js
-
-# Expose the port the app runs on
 EXPOSE 5252
 
-# Define the command to run the app
-CMD [ "node", "index.js" ]
+CMD ["npm", "start"]

@@ -1,23 +1,14 @@
-# Use the official Node.js 16 image as a parent image
-FROM node:16-alpine
+# Use a lightweight base image
+FROM nginx:alpine
 
-# Set the working directory
-WORKDIR /usr/src/app
+# Copy the static HTML file
+COPY index.html /usr/share/nginx/html/index.html
 
-# Add a simple NextJS app
-RUN npx create-next-app --typescript .
-RUN echo "import fetch from 'node-fetch';" > pages/index.tsx
-RUN echo "export default function Home({ message }) {" >> pages/index.tsx
-RUN echo "  return <div>Hello World! Message from backend: {message}</div>;" >> pages/index.tsx
-RUN echo "}" >> pages/index.tsx
-RUN echo "export async function getServerSideProps() {" >> pages/index.tsx
-RUN echo "  const res = await fetch('http://backend:5252/message');" >> pages/index.tsx
-RUN echo "  const data = await res.json();" >> pages/index.tsx
-RUN echo "  return { props: { message: data.message } };" >> pages/index.tsx
-RUN echo "}" >> pages/index.tsx
+# Copy the custom Nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose the port the app runs on
+# Expose port 3000
 EXPOSE 3000
 
-# Define the command to run the app
-CMD [ "npm", "run", "dev" ]
+# Start Nginx and keep the process in the foreground
+CMD ["nginx", "-g", "daemon off;"]
