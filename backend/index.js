@@ -14,6 +14,11 @@ app.get('/api/message', (req, res) => {
   res.json({ message: 'Hello from the backend!' });
 });
 
+app.get('/', (req, res) => {
+  res.json({ message: 'Healthy' });
+});
+
+
 app.listen(port, () => {
   console.log(`Backend listening at http://localhost:${port}`);
 });
