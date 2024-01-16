@@ -40,7 +40,7 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-            task-definition: terraform/task-definitions/service.latest.json
+            task-definition: infra/task-definitions/service.latest.json
             container-name: frontend 
             image: ${{ steps.build-image.outputs.image }}
 

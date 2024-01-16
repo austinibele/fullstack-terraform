@@ -9,7 +9,7 @@
   "executionRoleArn": "arn:aws:iam::349514606126:role/Policy-Ecs-Execution-Role",
   "containerDefinitions": [
     {
-      "name": "nextjs-image",
+      "name": "frontend",
       "image": "nginx:latest",
       "memoryReservation": 1024,
       "portMappings": [

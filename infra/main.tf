@@ -12,7 +12,7 @@ locals {
   ecs_network_mode = "awsvpc"
   ecs_cpu = 512
   ecs_memory = 1024
-  ecs_container_name = "nextjs-image"
+  ecs_container_name = "frontend"
   ecs_log_group = "/aws/ecs/${var.project_id}-${var.env}"
   # Retention in days
   ecs_log_retention = 1
@@ -149,7 +149,7 @@ resource "local_file" "output_task_def" {
   filename        = "./task-definitions/service.latest.json"
 }
 
-resource "aws_ecs_task_definition" "nextjs" {
+resource "aws_ecs_task_definition" "frontend" {
   family                   = "task-definition-node"
   execution_role_arn       = module.ecs_roles.ecs_execution_role_arn
   task_role_arn            = module.ecs_roles.ecs_task_role_arn
@@ -166,7 +166,7 @@ resource "aws_ecs_task_definition" "nextjs" {
 resource "aws_ecs_service" "web_ecs_service" {
   name            = "web-service-${var.project_id}-${var.env}"
   cluster         = aws_ecs_cluster.web_cluster.id
-  task_definition = aws_ecs_task_definition.nextjs.arn
+  task_definition = aws_ecs_task_definition.frontend.arn
   desired_count   = local.ecs_desired_count
   launch_type     = local.ecs_launch_type
 
