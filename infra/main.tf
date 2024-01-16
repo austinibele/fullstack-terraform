@@ -122,11 +122,15 @@ module "alb" {
 
 data "aws_caller_identity" "current" {}
 
-resource "aws_ecr_repository" "main" {
-  name                 = "web/${var.project_id}"
+resource "aws_ecr_repository" "frontend" {
+  name                 = "web/${var.project_id}-frontend"
   image_tag_mutability = "IMMUTABLE"
 }
 
+resource "aws_ecr_repository" "backend" {
+  name                 = "web/${var.project_id}-backend"
+  image_tag_mutability = "IMMUTABLE"
+}
 
 ## CI/CD user role for managing pipeline for AWS ECR resources
 module "ecr_ecs_ci_user" {

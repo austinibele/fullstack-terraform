@@ -65,10 +65,11 @@ jobs:
 
       - name: Update App Spec File
         run: |
-          sed -ie "s/<FRONTEND_CONTAINER_NAME>/frontend/" ./appspec.json
-          sed -ie "s/<FRONTEND_CONTAINER_PORT>/3000/" ./appspec.json
-          sed -ie "s/<BACKEND_CONTAINER_NAME>/backend/" ./appspec.json
-          sed -ie "s/<BACKEND_CONTAINER_PORT>/5252/" ./appspec.json
+          sed -ie "s/<CONTAINER_NAME>/$CONTAINER_NAME/" ./appspec.json
+          sed -ie "s/<CONTAINER_PORT>/$CONTAINER_PORT/" ./appspec.json
+        env:
+          CONTAINER_NAME: frontend 
+          CONTAINER_PORT: 3000
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
