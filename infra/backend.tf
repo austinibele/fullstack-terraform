@@ -5,17 +5,17 @@ resource "aws_ecr_repository" "backend" {
 }
 
 
-# Internal ALB for backend services
-resource "aws_lb" "internal_alb" {
-  name               = "alb-internal-${var.project_id}-${var.env}"
-  internal           = true
+# External ALB for backend services
+resource "aws_lb" "external_alb" {
+  name               = "alb-external-${var.project_id}-${var.env}"
+  internal           = false  # Set to false to make the load balancer external
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.internal_alb_sg.id]
-  subnets            = module.networking.private_subnets[*].id
+  security_groups    = [aws_security_group.external_alb_sg.id]
+  subnets            = module.networking.public_subnets[*].id  # Use public subnets for external ALB
 }
 
-resource "aws_lb_listener" "internal_listener" {
-  load_balancer_arn = aws_lb.internal_alb.arn
+resource "aws_lb_listener" "external_listener" {
+  load_balancer_arn = aws_lb.external_alb.arn 
   port              = "80"
   protocol          = "HTTP"
 
@@ -45,21 +45,22 @@ resource "aws_lb_target_group" "backend_tg" {
   }
 }
 
-resource "aws_security_group" "internal_alb_sg" {
+# Update the security group to allow access from the internet
+resource "aws_security_group" "external_alb_sg" {
   vpc_id = module.networking.vpc_id
 
   ingress {
     protocol    = "tcp"
     from_port   = 80
     to_port     = 80
-    cidr_blocks      = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"]  # Allows access from anywhere on the internet
   }
 
   egress {
     protocol    = -1
     from_port   = 0
     to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"]  # Allows all outbound traffic
   }
 }
 

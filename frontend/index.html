@@ -8,7 +8,7 @@
     <h1>Message from Backend:</h1>
     <div id="message">Loading...</div>
     <script>
-        fetch('http://web-dev-lb-1198769921.us-east-1.elb.amazonaws.com/api/message')
+        fetch('http://alb-external-node-app-prod-1687525174.us-east-1.elb.amazonaws.com/api/message')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('message').textContent = data.message;

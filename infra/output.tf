@@ -22,3 +22,7 @@ output "aws_iam_access_key" {
 output "alb_url" {
   value = module.alb.lb.dns_name
 }
+
+output "external_alb_url" {
+  value = aws_lb.external_alb.dns_name
+}
