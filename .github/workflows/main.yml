@@ -13,8 +13,6 @@ jobs:
     steps:
       - name: Install & Build
         uses: actions/checkout@v2
-      # - run: cd frontend && yarn install --frozen-lockfile
-      # - run: cd frontend && yarn build && yarn install --production --ignore-scripts --prefer-offline
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1

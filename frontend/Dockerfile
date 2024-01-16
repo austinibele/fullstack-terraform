@@ -4,15 +4,6 @@ FROM node:16-alpine
 # Set the working directory
 WORKDIR /usr/src/app
 
-# Copy the package.json and package-lock.json (if available)
-COPY package*.json ./
-
-# Install the project dependencies
-RUN npm install
-
-# Bundle the app source
-COPY . .
-
 # Add a simple NextJS app
 RUN npx create-next-app --typescript .
 RUN echo "import fetch from 'node-fetch';" > pages/index.tsx
