@@ -108,6 +108,23 @@ module "ecs_backend_tg" {
   target_group_suffix = "backend"
 }
 
+## Forward /API to backend
+resource "aws_lb_listener_rule" "backend" {
+  listener_arn = module.alb.http_listener.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = module.ecs_backend_tg.tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+}
+
 module "alb" {
   source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
   create_alb         = true

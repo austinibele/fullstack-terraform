@@ -10,7 +10,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.get('/message', (req, res) => {
+app.get('/api/message', (req, res) => {
   res.json({ message: 'Hello from the backend!' });
 });
 
