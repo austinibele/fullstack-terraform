@@ -12,7 +12,7 @@ locals {
   ecs_network_mode = "awsvpc"
   ecs_cpu = 512
   ecs_memory = 1024
-  ecs_container_name = "nextjs-image"
+  ecs_container_name = "frontend"
   ecs_log_group = "/aws/ecs/${var.project_id}-${var.env}"
   # Retention in days
   ecs_log_retention = 1
@@ -95,7 +95,7 @@ module "alb" {
 data "aws_caller_identity" "current" {}
 
 resource "aws_ecr_repository" "main" {
-  name                 = "web/${var.project_id}/nextjs"
+  name                 = "web/${var.project_id}"
   image_tag_mutability = "IMMUTABLE"
 }
 
