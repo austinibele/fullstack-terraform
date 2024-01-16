@@ -62,3 +62,45 @@ jobs:
           codedeploy-appspec: appspec.json
           codedeploy-application: deployment-app-node-app-prod
           codedeploy-deployment-group: deployment-group-node-app-prod
+
+      # Add steps to build and push the backend image
+      - name: Build, tag, and push backend image to Amazon ECR
+        id: build-backend-image
+        env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: web/node-app/backend
+            IMAGE_TAG: ${{ github.sha }}
+        run: |
+            cd backend && docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Fill in the new backend image ID in the Amazon ECS task definition
+        id: task-def-backend
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+            task-definition: infra/task-definitions/backend-service.latest.json
+            container-name: backend
+            image: ${{ steps.build-backend-image.outputs.image }}
+
+      # Add steps to update the appspec.json for the backend service
+      - name: Update App Spec File for Backend
+        run: |
+          sed -ie "s/<BACKEND_CONTAINER_NAME>/backend/" ./appspec.json
+          sed -ie "s/<BACKEND_CONTAINER_PORT>/5252/" ./appspec.json
+        env:
+          BACKEND_CONTAINER_NAME: backend
+          BACKEND_CONTAINER_PORT: 5252
+
+      # Add steps to deploy the backend ECS task definition
+      - name: Deploy Backend Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-backend.outputs.task-definition }}
+          service: backend-service-${{ env.PROJECT_ID }}-${{ env.ENVIRONMENT }}
+          cluster: backend-cluster-${{ env.PROJECT_ID }}-${{ env.ENVIRONMENT }}
+          wait-for-service-stability: true
+        env:
+          PROJECT_ID: node-app
+          ENVIRONMENT: prod
+

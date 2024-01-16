@@ -1,0 +1,88 @@
+
+resource "aws_ecr_repository" "backend" {
+  name                 = "web/${var.project_id}/backend"
+  image_tag_mutability = "IMMUTABLE"
+}
+
+
+# Internal ALB for backend services
+resource "aws_lb" "internal_alb" {
+  name               = "alb-internal-${var.project_id}-${var.env}"
+  internal           = true
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.internal_alb_sg.id]
+  subnets            = module.networking.private_subnets[*].id
+}
+
+resource "aws_lb_listener" "internal_listener" {
+  load_balancer_arn = aws_lb.internal_alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend_tg.arn
+  }
+}
+
+resource "aws_lb_target_group" "backend_tg" {
+  name     = "backend-tg-${var.project_id}-${var.env}"
+  port     = 5252
+  protocol = "HTTP"
+  vpc_id   = module.networking.vpc_id
+  target_type = "ip" # Ensure this is set to 'ip'
+
+  health_check {
+    enabled             = true
+    interval            = 30
+    path                = "/"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+}
+
+resource "aws_security_group" "internal_alb_sg" {
+  vpc_id = module.networking.vpc_id
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  egress {
+    protocol    = -1
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Backend ECS Service
+resource "aws_ecs_service" "backend_ecs_service" {
+  name            = "backend-service-${var.project_id}-${var.env}"
+  cluster         = aws_ecs_cluster.backend_cluster.id
+  task_definition = aws_ecs_task_definition.backend.arn
+  desired_count   = local.ecs_desired_count
+  launch_type     = local.ecs_launch_type
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.backend_tg.arn
+    container_name   = "backend"
+    container_port   = 5252
+  }
+
+  network_configuration {
+    subnets         = module.networking.private_subnets[*].id
+    security_groups = [aws_security_group.ecs_sg.id]
+  }
+
+  tags = {
+    Name = "backend-service-${var.project_id}-${var.env}"
+  }
+}

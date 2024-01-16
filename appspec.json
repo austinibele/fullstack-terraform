@@ -1,16 +1,29 @@
+
 {
-    "Resources": [
-      {
-        "TargetService": {
-          "Type": "AWS::ECS::Service",
-          "Properties": {
-            "TaskDefinition": "<TASK_ARN>",
-            "LoadBalancerInfo": {
-              "ContainerName": "<CONTAINER_NAME>",
-              "ContainerPort": "<CONTAINER_PORT>"
-            }
+  "Resources": [
+    {
+      "TargetService": {
+        "Type": "AWS::ECS::Service",
+        "Properties": {
+          "TaskDefinition": "<FRONTEND_TASK_ARN>",
+          "LoadBalancerInfo": {
+            "ContainerName": "frontend",
+            "ContainerPort": 3000
           }
         }
       }
-    ]
-  }
+    },
+    {
+      "TargetService": {
+        "Type": "AWS::ECS::Service",
+        "Properties": {
+          "TaskDefinition": "<BACKEND_TASK_ARN>",
+          "LoadBalancerInfo": {
+            "ContainerName": "backend",
+            "ContainerPort": 5252
+          }
+        }
+      }
+    }
+  ]
+}
