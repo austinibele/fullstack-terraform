@@ -19,7 +19,7 @@ locals {
 }
 
 module "networking" {
-  source = "github.com/austinibele/tf-modules//networking?ref=v1.0.1"
+  source = "github.com/austinibele/tf-modules//networking?ref=v1.0.25"
   env = var.env
   project_id = var.project_id
   subnet_public_cidrblock = [
@@ -73,7 +73,7 @@ resource "aws_security_group" "ecs_sg" {
 }
 
 module "ecs_tg" {
-  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.2"
+  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.25"
   create_target_group = true
   port                = local.target_port
   protocol            = "HTTP"
@@ -82,7 +82,7 @@ module "ecs_tg" {
 }
 
 module "alb" {
-  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.2"
+  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.25"
   create_alb         = true
   enable_https       = false
   internal           = false
@@ -102,7 +102,7 @@ resource "aws_ecr_repository" "main" {
 
 ## CI/CD user role for managing pipeline for AWS ECR resources
 module "ecr_ecs_ci_user" {
-  source            = "github.com/austinibele/tf-modules//iam/ecr?ref=v1.0.15"
+  source            = "github.com/austinibele/tf-modules//iam/ecr?ref=v1.0.25"
   env               = var.env
   project_id        = var.project_id
   create_ci_user    = true
