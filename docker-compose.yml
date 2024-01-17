@@ -6,6 +6,8 @@ services:
       - "5252:5252"
     networks:
       - app-network
+    depends_on:
+      - db
 
   frontend:
     build: ./frontend
@@ -15,6 +17,18 @@ services:
       - backend
     networks:
       - app-network
+
+  db:
+    build:  ./db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
 
 networks:
   app-network:
