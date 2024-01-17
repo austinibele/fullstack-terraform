@@ -29,7 +29,8 @@ app.get('/api/message', async (req, res) => {
     res.json({ message: 'Hello from the backend!', data: mockData });
   } catch (error) {
     console.error('Database query error', error);
-    res.status(500).json({ message: 'Error fetching data from the database' });
+    // Send the error message in the response
+    res.status(500).json({ message: 'Error fetching data from the database', error: error.message });
   }
 });
 
