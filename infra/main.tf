@@ -76,16 +76,17 @@ resource "aws_security_group" "ecs_sg" {
 }
 
 module "ecs_tg" {
-  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.25"
+  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
   create_target_group = true
   port                = local.target_port
   protocol            = "HTTP"
   target_type         = "ip"
   vpc_id              = module.networking.vpc_id
+  target_group_suffix = "frontend"
 }
 
 module "alb" {
-  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.25"
+  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
   create_alb         = true
   enable_https       = false
   internal           = false
@@ -93,6 +94,7 @@ module "alb" {
   security_groups    = [aws_security_group.alb_ecs_sg.id]
   subnets            = module.networking.public_subnets[*].id
   target_group       = module.ecs_tg.tg.arn
+  target_group_suffix = "frontend"
 }
 
 data "aws_caller_identity" "current" {}

@@ -12,11 +12,6 @@ resource "aws_ecs_cluster" "backend_cluster" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "ecs_backend" {
-  name = local.ecs_log_group
-  retention_in_days = local.ecs_log_retention
-}
-
 data "template_file" "backend_task_def_generated" {
   template = "${file("./task-definitions/backend-service.json.tpl")}"
   vars = {
@@ -56,17 +51,19 @@ resource "aws_ecs_task_definition" "backend" {
 
 # Use the same module for target group as in main.tf
 module "backend_ecs_tg" {
-  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.25"
+  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
   create_target_group = true
   port                = local.backend_port
   protocol            = "HTTP"
   target_type         = "ip"
   vpc_id              = module.networking.vpc_id
+  target_group_suffix = "backend"
+  
 }
 
 # Use the same module for ALB as in main.tf
 module "backend_alb" {
-  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.25"
+  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
   create_alb         = true
   enable_https       = false
   internal           = false
@@ -74,6 +71,7 @@ module "backend_alb" {
   security_groups    = [aws_security_group.backend_alb_ecs_sg.id]
   subnets            = module.networking.public_subnets[*].id
   target_group       = module.backend_ecs_tg.tg.arn
+  target_group_suffix = "backend"
 }
 
 
