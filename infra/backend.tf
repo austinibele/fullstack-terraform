@@ -4,6 +4,51 @@ resource "aws_ecr_repository" "backend" {
   image_tag_mutability = "IMMUTABLE"
 }
 
+resource "aws_ecs_cluster" "backend_cluster" {
+  name = "backend-cluster-${var.project_id}-${var.env}"
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
+data "template_file" "backend_task_def_generated" {
+  template = "${file("./task-definitions/backend-service.json.tpl")}"
+  vars = {
+    env                 = var.env
+    port                = 5252
+
+    network_mode        = local.ecs_network_mode
+    launch_type         = local.ecs_launch_type
+    cpu                 = local.ecs_cpu
+    memory              = local.ecs_memory
+    ecs_execution_role  = module.ecs_roles.ecs_execution_role_arn
+    log_group           = local.ecs_log_group
+    aws_region          = var.aws_region
+  }
+
+}
+
+# Create a static version of task definition for CI/CD
+resource "local_file" "backend_output_task_def" {
+  content         = data.template_file.backend_task_def_generated.rendered
+  file_permission = "644"
+  filename        = "./task-definitions/backend-service.latest.json"
+}
+
+resource "aws_ecs_task_definition" "backend" {
+  family                   = "task-definition-node"
+  execution_role_arn       = module.ecs_roles.ecs_execution_role_arn
+  task_role_arn            = module.ecs_roles.ecs_task_role_arn
+
+  requires_compatibilities = [local.ecs_launch_type]
+  network_mode             = local.ecs_network_mode
+  cpu                      = local.ecs_cpu
+  memory                   = local.ecs_memory
+  container_definitions    = jsonencode(
+    jsondecode(data.template_file.backend_task_def_generated.rendered).containerDefinitions
+    )
+}
 
 # External ALB for backend services
 resource "aws_lb" "external_alb" {
