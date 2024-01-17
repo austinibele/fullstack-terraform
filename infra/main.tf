@@ -8,6 +8,7 @@ locals {
 
   # Backend service port
   backend_port = 5252
+  backend_ecs_container_name = "backend"
 
   ## ECS Service config
   ecs_launch_type = "FARGATE"
@@ -76,7 +77,7 @@ resource "aws_security_group" "ecs_sg" {
 }
 
 module "ecs_tg" {
-  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
+  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.27"
   create_target_group = true
   port                = local.target_port
   protocol            = "HTTP"
@@ -86,7 +87,7 @@ module "ecs_tg" {
 }
 
 module "alb" {
-  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
+  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.27"
   create_alb         = true
   enable_https       = false
   internal           = false

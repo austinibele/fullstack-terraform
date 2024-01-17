@@ -51,7 +51,7 @@ resource "aws_ecs_task_definition" "backend" {
 
 # Use the same module for target group as in main.tf
 module "backend_ecs_tg" {
-  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
+  source              = "github.com/austinibele/tf-modules//alb?ref=v1.0.27"
   create_target_group = true
   port                = local.backend_port
   protocol            = "HTTP"
@@ -63,7 +63,7 @@ module "backend_ecs_tg" {
 
 # Use the same module for ALB as in main.tf
 module "backend_alb" {
-  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.26"
+  source             = "github.com/austinibele/tf-modules//alb?ref=v1.0.27"
   create_alb         = true
   enable_https       = false
   internal           = false
@@ -125,7 +125,7 @@ resource "aws_ecs_service" "backend_ecs_service" {
 
   load_balancer {
     target_group_arn = module.backend_ecs_tg.tg.arn
-    container_name   = local.ecs_container_name
+    container_name   = local.backend_ecs_container_name
     container_port   = local.backend_port
   }
 
