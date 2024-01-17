@@ -45,11 +45,30 @@ resource "aws_security_group" "external_alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]  # Allows access from anywhere on the internet
   }
 
+  ## Allow outbound to ecs instances in private subnet
   egress {
-    protocol    = -1
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]  # Allows all outbound traffic
+    protocol    = "tcp"
+    from_port   = local.backend_port
+    to_port     = local.backend_port
+    cidr_blocks = module.networking.private_subnets[*].cidr_block
+  }
+}
+
+resource "aws_security_group" "backend_ecs_sg" {
+  vpc_id = module.networking.vpc_id
+  ingress {
+    protocol         = "tcp"
+    from_port        = local.backend_port
+    to_port          = local.backend_port
+    security_groups  = [aws_security_group.alb_ecs_sg.id]
+  }
+
+  ## Allow ECS service to reach out to internet (download packages, pull images etc)
+  egress {
+    protocol         = -1
+    from_port        = 0
+    to_port          = 0
+    cidr_blocks      = ["0.0.0.0/0"]
   }
 }
 

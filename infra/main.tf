@@ -6,6 +6,9 @@ locals {
   # Target port to expose
   target_port = 3000
 
+  # Backend service port
+  backend_port = 5252
+
   ## ECS Service config
   ecs_launch_type = "FARGATE"
   ecs_desired_count = 2
