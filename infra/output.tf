@@ -23,6 +23,6 @@ output "alb_url" {
   value = module.alb.lb.dns_name
 }
 
-output "external_alb_url" {
-  value = aws_lb.external_alb.dns_name
+output "backend_alb_url" {
+  value = module.backend_alb.lb.dns_name
 }
