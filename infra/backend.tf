@@ -32,17 +32,6 @@ resource "aws_lb_target_group" "backend_tg" {
   vpc_id   = module.networking.vpc_id
   target_type = "ip" # Ensure this is set to 'ip'
 
-  health_check {
-    enabled             = true
-    interval            = 30
-    path                = "/"
-    port                = "traffic-port"
-    protocol            = "HTTP"
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    matcher             = "200"
-  }
 }
 
 # Update the security group to allow access from the internet
