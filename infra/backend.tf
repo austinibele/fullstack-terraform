@@ -81,8 +81,8 @@ resource "aws_security_group" "backend_alb_ecs_sg" {
   ## Allow inbound on the backend port from the internet (all traffic)
   ingress {
     protocol         = "tcp"
-    from_port        = local.backend_port
-    to_port          = local.backend_port
+    from_port        = 80
+    to_port          = 80
     cidr_blocks      = ["0.0.0.0/0"]
   }
 

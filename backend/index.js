@@ -4,7 +4,7 @@ const app = express();
 const port = 5252;
 
 const corsOptions = {
-  origin: 'http://web-dev-lb-1198769921.us-east-1.elb.amazonaws.com', // Replace with your frontend's domain
+  origin: 'http://web-dev-frontendlb-894222867.us-east-1.elb.amazonaws.com', // Replace with your frontend's domain
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
