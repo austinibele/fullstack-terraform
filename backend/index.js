@@ -1,21 +1,20 @@
 const express = require('express');
 const cors = require('cors');
-const { Pool } = require('pg'); // Import the Pool class from the pg module
+const { Pool } = require('pg');
 
 const app = express();
-const port = 5252;
+const port = process.env.PORT || 5252;
 
-// Configure the database connection using Pool
 const pool = new Pool({
-  user: 'dbuser', // Replace with your database username
-  host: 'http://node-app-prod-db.ckefgvbvfe0n.us-east-1.rds.amazonaws.com', // Replace with your RDS endpoint
-  database: 'mydb', // Replace with your database name
-  password: 'postgres',
-  port: 5432,
+  user: process.env.DB_USER || 'dbuser',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'mydb',
+  password: process.env.DB_PASSWORD || 'postgres',
+  port: process.env.DB_PORT || 5432,
 });
 
 const corsOptions = {
-  origin: 'http://web-dev-frontendlb-894222867.us-east-1.elb.amazonaws.com',
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   optionsSuccessStatus: 200
 };
 
@@ -24,7 +23,7 @@ app.use(cors(corsOptions));
 app.get('/api/message', async (req, res) => {
   try {
     // Replace the query below with your actual query to fetch mock data
-    const result = await pool.query('SELECT * FROM mock');
+    const result = await pool.query('SELECT * FROM mock_table');
     const mockData = result.rows;
     res.json({ message: 'Hello from the backend!', data: mockData });
   } catch (error) {

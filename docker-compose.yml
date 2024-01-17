@@ -4,6 +4,14 @@ services:
     build: ./backend
     ports:
       - "5252:5252"
+    environment:
+      - PORT=5252
+      - DB_USER=dbuser
+      - DB_HOST=db
+      - DB_NAME=mydb
+      - DB_PASSWORD=postgres
+      - DB_PORT=5432
+      - CORS_ORIGIN=http://localhost:3000
     networks:
       - app-network
     depends_on:
@@ -13,15 +21,21 @@ services:
     build: ./frontend
     ports:
       - "3000:3000"
+    environment:
+      - BACKEND_URL=http://localhost:5252
     depends_on:
       - backend
     networks:
       - app-network
 
   db:
-    build:  ./db
+    build: ./db
     ports:
       - "5432:5432"
+    environment:
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mydb
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

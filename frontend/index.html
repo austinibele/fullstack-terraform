@@ -25,7 +25,8 @@
     <div id="mock-data-list"></div>
 
     <script>
-        fetch('http://web-dev-backendlb-1154123055.us-east-1.elb.amazonaws.com/api/message')
+        const backendUrl = '__BACKEND_URL__';
+        fetch(`${backendUrl}/api/message`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('message').textContent = data.message;
@@ -39,7 +40,7 @@
                     data.data.forEach(item => {
                         const mockDataItem = document.createElement('div');
                         mockDataItem.classList.add('mock-data-item');
-                        mockDataItem.textContent = `ID: ${item.id}, Name: ${item.name}, Message: ${item.message}, Created At: ${item.created_at}`;
+                        mockDataItem.textContent = `ID: ${item.id}, Name: ${item.name}, Description: ${item.description}`;
                         mockDataList.appendChild(mockDataItem);
                     });
                 }
