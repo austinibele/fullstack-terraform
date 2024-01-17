@@ -26,3 +26,8 @@ output "alb_url" {
 output "backend_alb_url" {
   value = module.backend_alb.lb.dns_name
 }
+
+output "db_endpoint" {
+  description = "The connection endpoint for the RDS instance"
+  value       = module.db.db_instance_endpoint
+}

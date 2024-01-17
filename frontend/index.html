@@ -3,15 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>Simple Frontend</title>
+    <style>
+        /* Add some basic styling for the mock data list */
+        #mock-data-list {
+            margin-top: 20px;
+        }
+        .mock-data-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
     <h1>Message from Backend:</h1>
     <div id="message">Loading...</div>
+
+    <!-- Add a section to display mock data -->
+    <h2>Mock Data:</h2>
+    <div id="mock-data-list"></div>
+
     <script>
         fetch('http://web-dev-backendlb-1154123055.us-east-1.elb.amazonaws.com/api/message')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('message').textContent = data.message;
+                
+                // Check if mock data is present and display it
+                if (data.data && data.data.length > 0) {
+                    const mockDataList = document.getElementById('mock-data-list');
+                    // Clear any existing content
+                    mockDataList.innerHTML = '';
+                    // Create and append mock data items to the list
+                    data.data.forEach(item => {
+                        const mockDataItem = document.createElement('div');
+                        mockDataItem.classList.add('mock-data-item');
+                        mockDataItem.textContent = `ID: ${item.id}, Name: ${item.name}, Message: ${item.message}, Created At: ${item.created_at}`;
+                        mockDataList.appendChild(mockDataItem);
+                    });
+                }
             })
             .catch(error => {
                 console.error('There was an error fetching the message from the backend:', error);

@@ -9,3 +9,7 @@ variable "project_id" {
 variable "env" {
   default = "prod"
 }
+
+variable "db_password" {
+  default = "postgres" 
+}
