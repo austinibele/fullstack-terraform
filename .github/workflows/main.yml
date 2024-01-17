@@ -34,8 +34,11 @@ jobs:
             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             ECR_REPOSITORY: web/node-app/frontend
             IMAGE_TAG: ${{ github.sha }}
+            BACKEND_URL: http://web-dev-backendlb-1154123055.us-east-1.elb.amazonaws.com
         run: |
-            cd frontend && docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+            cd frontend && docker build \
+              --build-arg BACKEND_URL=${BACKEND_URL} \
+              -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
@@ -75,8 +78,23 @@ jobs:
             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             ECR_REPOSITORY: web/node-app/backend
             IMAGE_TAG: ${{ github.sha }}
+            PORT: 5252
+            DB_USER: dbuser
+            DB_HOST: http://node-app-prod-db.ckefgvbvfe0n.us-east-1.rds.amazonaws.com
+            DB_NAME: mydb
+            DB_PASSWORD: postgres
+            DB_PORT: 5432
+            CORS_ORIGIN: http://web-dev-frontendlb-894222867.us-east-1.elb.amazonaws.com
         run: |
-            cd backend && docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+            cd backend && docker build \
+              --build-arg PORT=${PORT} \
+              --build-arg DB_USER=${DB_USER} \
+              --build-arg DB_HOST=${DB_HOST} \
+              --build-arg DB_NAME=${DB_NAME} \
+              --build-arg DB_PASSWORD=${DB_PASSWORD} \
+              --build-arg DB_PORT=${DB_PORT} \
+              --build-arg CORS_ORIGIN=${CORS_ORIGIN} \
+              -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
