@@ -31,3 +31,8 @@ output "db_endpoint" {
   description = "The connection endpoint for the RDS instance"
   value       = module.db.db_instance_endpoint
 }
+
+output "db_host" {
+  description = "The hostname of the RDS instance"
+  value       = module.db.db_instance_address
+}

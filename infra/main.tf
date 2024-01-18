@@ -23,7 +23,7 @@ locals {
 }
 
 module "networking" {
-  source = "github.com/austinibele/tf-modules//networking?ref=v1.0.25"
+  source = "github.com/austinibele/tf-modules//networking?ref=v1.0.29"
   env = var.env
   project_id = var.project_id
   subnet_public_cidrblock = [

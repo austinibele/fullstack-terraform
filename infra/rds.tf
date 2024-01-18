@@ -3,6 +3,8 @@ module "db" {
 
   identifier = "${var.project_id}-${var.env}-db"
 
+  publicly_accessible = true
+
   engine            = "postgres"
   engine_version    = "16.1"  # Specify the version you want to use
   instance_class    = "db.t3.micro"  # Choose the instance size
@@ -14,14 +16,17 @@ module "db" {
   password = var.db_password
   port     = "5432"
 
-  vpc_security_group_ids = [aws_security_group.backend_db_sg.id]
+  # vpc_security_group_ids = [aws_security_group.backend_ecs_sg.id]
 
   maintenance_window = "Mon:00:00-Mon:03:00"
   backup_window      = "03:00-06:00"
 
   # Subnets
   create_db_subnet_group = true
-  subnet_ids             = module.networking.private_subnets[*].id
+  subnet_ids = concat(
+    module.networking.private_subnets[*].id,
+    module.networking.public_subnets[*].id
+    )
 
   # Backup
   backup_retention_period = 7
@@ -49,32 +54,6 @@ module "db" {
       value = "all"
     }
   ]
-}
-
-resource "aws_security_group" "backend_db_sg" {
-  name        = "backend-db-sg-${var.project_id}-${var.env}"
-  description = "Security group for RDS DB instance"
-  vpc_id      = module.networking.vpc_id
-
-  ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    security_groups = [aws_security_group.backend_ecs_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "backend-db-sg-${var.project_id}-${var.env}"
-    Environment = var.env
-    Project     = var.project_id
-  }
 }
 
 resource "aws_db_parameter_group" "default" {
