@@ -1,66 +1,29 @@
 module "db" {
-  source = "terraform-aws-modules/rds/aws"
+  source  = "terraform-aws-modules/rds/aws"
 
-  identifier = "${var.project_id}-${var.env}-db"
+  # vpc_security_group_ids = [module.postgres_security_group.security_group_id]
+  create_db_subnet_group = false
+  # db_subnet_group_name   = local.create_test_resources ? var.subnet_group_name : ""
 
-  publicly_accessible = false
+  deletion_protection = false
 
-  engine            = "postgres"
-  engine_version    = "16.1"  # Specify the version you want to use
-  instance_class    = "db.t3.micro"  # Choose the instance size
-  allocated_storage = 20
-  storage_type      = "gp2"
+  username       = var.db_username
+  password       = var.db_password
+  port           = var.db_port
+  identifier     = "${var.project_id}-${var.env}-db"
+  # name           = var.db_name
+  engine         = "postgres"
+  engine_version = "16.1"
 
-  db_name  = "mydb"
-  username = "dbuser"
-  password = var.db_password
-  port     = "5432"
+  create_db_option_group    = false
+  create_db_parameter_group = false
 
-  # vpc_security_group_ids = [aws_security_group.backend_ecs_sg.id]
-
+  allocated_storage  = var.db_storage
+  instance_class     = "db.t3.micro"
   maintenance_window = "Mon:00:00-Mon:03:00"
   backup_window      = "03:00-06:00"
-
-  # Subnets
-  create_db_subnet_group = true
-  subnet_ids = module.networking.private_subnets[*].id
-
-  # Backup
-  backup_retention_period = 7
-  skip_final_snapshot     = false
-
-  # Monitoring
-  monitoring_interval = 0
-
-  # Tags
-  tags = {
-    Name        = "mydb-${var.project_id}-${var.env}"
-    Environment = var.env
-    Project     = var.project_id
-  }
-
-  # Enable deletion protection only in production
-  deletion_protection = var.env == "prod" ? true : false
-
-  # DB parameter group
-  family = "postgres16"  # Match the family to the `engine_version`
-
-  parameters = [
-    {
-      name  = "log_statement"
-      value = "all"
-    }
-  ]
-}
-
-resource "aws_db_parameter_group" "default" {
-  name        = "db-pg-${var.project_id}-${var.env}"
-  family      = "postgres16" 
-
-  parameter {
-    name  = "log_statement"
-    value = "all"
-  }
+  # maintenance_window = var.db_maintenance_window
+  # backup_window      = var.db_backup_window
 
   tags = {
     Name        = "db-pg-${var.project_id}-${var.env}"
@@ -68,3 +31,26 @@ resource "aws_db_parameter_group" "default" {
     Project     = var.project_id
   }
 }
+
+# module "postgres_security_group" {
+#   source  = "terraform-aws-modules/security-group/aws//modules/postgresql"
+
+#   name   = "${var.project_id}-rds-sg"
+#   vpc_id = module.networking.vpc_id
+  
+#   # using computed_* here to get around count issues.
+#   # ingress_cidr_blocks = module.networking.subnet_private_cidrblock
+#   # computed_ingress_cidr_blocks = module.networking.subnet_private_cidrblock
+#   # number_of_computed_ingress_cidr_blocks = 1
+
+#   ingress_rules       = ["postgresql-tcp"]
+
+#   egress_cidr_blocks = ["0.0.0.0/0"]
+#   egress_rules       = ["http-80-tcp", "https-443-tcp"]
+
+#   tags = {
+#     Terraform   = "true"
+#     Name = "${var.env}-rds-sg"
+#     Environment = var.env
+#   }
+# }

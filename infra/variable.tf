@@ -13,3 +13,19 @@ variable "env" {
 variable "db_password" {
   default = "postgres" 
 }
+
+variable "db_name" {
+  default = "mydb"
+}
+
+variable "db_username" {
+  default = "dbuser"
+}
+
+variable "db_port" {
+  default = 5432
+}
+
+variable "db_storage" {
+  default = 20
+}

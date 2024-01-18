@@ -106,13 +106,6 @@ resource "aws_security_group" "backend_ecs_sg" {
     security_groups  = [aws_security_group.backend_alb_ecs_sg.id]
   }
 
-  ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = ["24.88.41.67/32"]
-  }
-
   ## Allow ECS service to reach out to the internet (download packages, pull images, etc.)
   egress {
     protocol         = -1
