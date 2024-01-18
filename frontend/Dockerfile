@@ -1,6 +1,12 @@
 # Use a lightweight base image
 FROM nginx:alpine
 
+# Define the ARG for the build stage
+ARG BACKEND_URL
+
+# Define the ENV for the runtime stage
+ENV BACKEND_URL=${BACKEND_URL}
+
 # Copy the static HTML file
 COPY index.html /usr/share/nginx/html/index.html
 
