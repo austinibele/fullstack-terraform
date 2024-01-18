@@ -3,7 +3,7 @@ module "db" {
 
   identifier = "${var.project_id}-${var.env}-db"
 
-  publicly_accessible = true
+  publicly_accessible = false
 
   engine            = "postgres"
   engine_version    = "16.1"  # Specify the version you want to use
@@ -23,10 +23,7 @@ module "db" {
 
   # Subnets
   create_db_subnet_group = true
-  subnet_ids = concat(
-    module.networking.private_subnets[*].id,
-    module.networking.public_subnets[*].id
-    )
+  subnet_ids = module.networking.private_subnets[*].id
 
   # Backup
   backup_retention_period = 7
