@@ -80,7 +80,7 @@ jobs:
             IMAGE_TAG: ${{ github.sha }}
             PORT: 5252
             DB_USER: postgres
-            DB_HOST: http://node-app-prod-db.ckefgvbvfe0n.us-east-1.rds.amazonaws.com
+            DB_HOST: node-app-prod-db.ckefgvbvfe0n.us-east-1.rds.amazonaws.com
             DB_NAME: postgres
             DB_PASSWORD: postgres
             DB_PORT: 5432
