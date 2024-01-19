@@ -79,15 +79,12 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
           terraform_wrapper: false
 
-      # - name: Terraform Init
-      #   run: |
-      #     cd infra
-      #     terraform init
 
       - name: Retrieve DB_HOST from Terraform outputs
         id: terraform-output
         run: |
           cd infra
+          terraform init
           echo "Retrieving DB_HOST..."
           DB_HOST=$(terraform output -raw db_host)
           echo "DB_HOST=$DB_HOST" >> $GITHUB_ENV
