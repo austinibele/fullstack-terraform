@@ -14,7 +14,7 @@ const pool = new Pool({
 });
 
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: `http://${process.env.CORS_ORIGIN}` || 'http://localhost:3000',
   optionsSuccessStatus: 200
 };
 
