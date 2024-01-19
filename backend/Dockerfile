@@ -2,6 +2,29 @@ FROM node:16-alpine
 
 WORKDIR /app
 
+# ENV Vars for build stage
+ARG PORT
+ENV PORT=${PORT}
+
+ARG DB_USER
+ENV DB_USER=${DB_USER}
+
+ARG DB_HOST
+ENV DB_HOST=${DB_HOST}
+
+ARG DB_NAME
+ENV DB_NAME=${DB_NAME}
+
+ARG DB_PASSWORD
+ENV DB_PASSWORD=${DB_PASSWORD}
+
+ARG DB_PORT
+ENV DB_PORT=${DB_PORT}
+
+ARG CORS_ORIGIN
+ENV CORS_ORIGIN=${CORS_ORIGIN}
+
+
 COPY package*.json ./
 
 RUN npm install --only=production
