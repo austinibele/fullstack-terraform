@@ -2,12 +2,13 @@
 Frontend and Backend services on ECS Fargate, Load Balancers, Private Postgres RDS Instance with Bastion EC2 Instance, and CI/CD with Terraform Cloud and GitHub Actions
 
 # TODO
-1. Allow AWS to "manage_master_user_password" for RDS instance. We should have multiple DB users for different tasks. https://aws.amazon.com/blogs/database/managing-postgresql-users-and-roles/
+1. Use HashiCorp Vault to store secrets (DB user and password), and use its integrations with GitHub Actions and Terraform to pull secrets dynamically. https://github.com/hashicorp/vault-action 
+2. Allow AWS to "manage_master_user_password" for RDS instance. We should have multiple DB users for different tasks. https://aws.amazon.com/blogs/database/managing-postgresql-users-and-roles/
 
 
-# Keep Secrets in separate tfvars file 
+# Current Configuration: Keep secrets in separate tfvars file 
 1. This file should not be commited to github
-2. It is better use a encrypted secrets manager
+2. It is better use a encrypted secrets manager (see TODO [should use HashiCorp Vault])
 
 ```
 cd infra
