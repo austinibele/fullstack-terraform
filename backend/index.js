@@ -29,7 +29,7 @@ app.get('/api/message', async (req, res) => {
   } catch (error) {
     console.error('Database query error', error);
     // Send the error message in the response
-    res.status(500).json({ message: 'Error fetching data from the database', error: error.message });
+    res.status(500).json({ message: `Error fetching data from the database: ${error.message}` });
   }
 });
 
