@@ -26,7 +26,7 @@
 
     <script>
         const backendUrl = '__BACKEND_URL__';
-        fetch(`${backendUrl}/api/message`)
+        fetch(`http://${backendUrl}/api/message`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('message').textContent = data.message;

@@ -51,7 +51,6 @@ jobs:
           echo "Retrieving backend_alb_url..."
           BACKEND_URL=$(terraform output -raw backend_alb_url)
           echo "BACKEND_URL=$BACKEND_URL" >> $GITHUB_ENV
-          echo "Echo BACKEND_URL after Terraform output: $BACKEND_URL"
 
           echo "Retrieving alb_url..."
           FRONTEND_URL=$(terraform output -raw alb_url)
@@ -70,10 +69,6 @@ jobs:
       ############
       # Frontend #
       ############
-      - name: Echo BACKEND_URL before frontend build
-        run: |
-          echo "Echo BACKEND_URL before frontend build: ${{ env.BACKEND_URL }}"
-        
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
@@ -87,7 +82,6 @@ jobs:
               -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             echo "FRONTEND_IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
-            echo "Echo BACKEND_URL after frontend build: $BACKEND_URL"
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
