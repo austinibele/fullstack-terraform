@@ -13,7 +13,9 @@ terraform plan -var-file="secrets.tfvars"
 terraform apply --auto-approve -var-file="secrets.tfvars"
 ```
 
-# Terraform
+# Dyanmically set ENV Vars in GitHub Actions from Terraform Output
+First, you must migrate your terraform state to Terraform Cloud: https://developer.hashicorp.com/terraform/tutorials/cloud/cloud-migrate
+Set your AWS Secrets in Terraform Cloud, and set your Terraform API Key as a GitHub Secret: https://betterprogramming.pub/github-actions-in-action-with-terraform-cloud-bfd7b5be666c
 
 1. Set the Terraform API token in GitHub secrets. This will allow us to retrieve Terraform outputs dynamically.
 

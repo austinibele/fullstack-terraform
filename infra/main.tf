@@ -1,3 +1,13 @@
+terraform {
+  cloud {
+    organization = "austinibele"
+
+    workspaces {
+      name = "fullstack-terraform-template"
+    }
+  }
+}
+
 provider "aws" {
   region  = var.aws_region
 }
