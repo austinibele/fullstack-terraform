@@ -11,15 +11,12 @@ variable "env" {
 }
 
 variable "db_password" {
-  default = "postgres" 
 }
 
 variable "db_name" {
-  default = "postgres"
 }
 
 variable "db_username" {
-  default = "postgres"
 }
 
 variable "db_port" {

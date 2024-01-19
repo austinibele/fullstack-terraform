@@ -36,3 +36,15 @@ output "db_host" {
   description = "The hostname of the RDS instance"
   value       = module.db.db_instance_address
 }
+
+output "db_name" {
+  value = var.db_name
+}
+
+output "db_username" {
+  value = var.db_username
+}
+
+output "db_port" {
+  value = var.db_port
+}
