@@ -72,17 +72,20 @@ jobs:
       ###########
       # Backend #
       ###########
-      - name: Retrieve DB_HOST from Terraform outputs
-        id: terraform-output
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.7.0
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Retrieve DB_HOST from Terraform outputs
+        id: terraform-output
         run: |
-          terraform output -raw db_host
+          echo "Retrieving DB_HOST..."
+          DB_HOST=$(terraform output -raw db_host)
+          echo "DB_HOST=$DB_HOST" >> $GITHUB_ENV
         env:
-          TF_WORKSPACE: ${{ secrets.TF_WORKSPACE }}
-        continue-on-error: false
+          TF_WORKSPACE: fullstack-terraform-template
 
       - name: Build, tag, and push backend image to Amazon ECR
         id: build-backend-image
@@ -92,7 +95,7 @@ jobs:
             IMAGE_TAG: ${{ github.sha }}
             PORT: 5252
             DB_USER: postgres
-            DB_HOST: ${{ steps.terraform-output.outputs.stdout }}
+            DB_HOST: ${{ env.DB_HOST }} 
             DB_NAME: postgres
             DB_PASSWORD: postgres
             DB_PORT: 5432
