@@ -8,7 +8,6 @@ module "bastion" {
   instance_type               = "t2.small"
   vpc_security_group_ids      = [module.bastion_security_group.this_security_group_id]
   subnet_ids                  = module.networking.public_subnets[*].id
-#   key_name                    = var.bastion_key_name
 }
 
 module "bastion_security_group" {
@@ -17,6 +16,9 @@ module "bastion_security_group" {
 
   name   = "${var.project_id}-bastion-sg"
   vpc_id = module.networking.vpc_id
+
+  ingress_cidr_blocks = ["18.206.107.24/29"] # EC2InstanceConnect for US-EAST-1 (https://ip-ranges.amazonaws.com/ip-ranges.json)
+  ingress_rules = ["ssh-tcp"]
 
   egress_cidr_blocks = ["0.0.0.0/0"]
   egress_rules       = ["postgresql-tcp", "http-80-tcp", "https-443-tcp"]

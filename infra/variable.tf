@@ -15,11 +15,11 @@ variable "db_password" {
 }
 
 variable "db_name" {
-  default = "mydb"
+  default = "postgres"
 }
 
 variable "db_username" {
-  default = "dbuser"
+  default = "postgres"
 }
 
 variable "db_port" {

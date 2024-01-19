@@ -1,3 +1,6 @@
+# TODO
+1. Allow AWS to "manage_master_user_password" for RDS instance. We should have multiple DB users for different tasks. https://aws.amazon.com/blogs/database/managing-postgresql-users-and-roles/
+
 # Terraform
 
 1. Set the Terraform API token in GitHub secrets. This will allow us to retrieve Terraform outputs dynamically.
