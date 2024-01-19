@@ -14,6 +14,9 @@ jobs:
       - name: Install & Build
         uses: actions/checkout@v2
 
+      ############
+      ### AWS ####
+      ############
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -25,53 +28,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      ############
-      # Frontend #
-      ############
-      # - name: Build, tag, and push image to Amazon ECR
-      #   id: build-image
-      #   env:
-      #       ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #       ECR_REPOSITORY: web/node-app/frontend
-      #       IMAGE_TAG: ${{ github.sha }}
-      #       BACKEND_URL: http://web-dev-backendlb-1154123055.us-east-1.elb.amazonaws.com
-      #   run: |
-      #       cd frontend && docker build \
-      #         --build-arg BACKEND_URL=${BACKEND_URL} \
-      #         -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-      #       docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-      #       echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-      # - name: Fill in the new image ID in the Amazon ECS task definition
-      #   id: task-def
-      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-      #   with:
-      #       task-definition: infra/task-definitions/service.latest.json
-      #       container-name: frontend 
-      #       image: ${{ steps.build-image.outputs.image }}
-
-      # - name: Update App Spec File
-      #   run: |
-      #     sed -ie "s/<CONTAINER_NAME>/$CONTAINER_NAME/" ./appspec.json
-      #     sed -ie "s/<CONTAINER_PORT>/$CONTAINER_PORT/" ./appspec.json
-      #   env:
-      #     CONTAINER_NAME: frontend 
-      #     CONTAINER_PORT: 3000
-
-      # - name: Deploy Amazon ECS task definition
-      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      #   with:
-      #     task-definition: ${{ steps.task-def.outputs.task-definition }}
-      #     service: web-service-node-app-prod
-      #     cluster: web-cluster-node-app-prod
-      #     wait-for-service-stability: true
-      #     codedeploy-appspec: appspec.json
-      #     codedeploy-application: deployment-app-node-app-prod
-      #     codedeploy-deployment-group: deployment-group-node-app-prod
-
-      ###########
-      # Backend #
-      ###########
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -79,18 +35,84 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
           terraform_wrapper: false
 
-
+      ############
+      # Terraform #
+      ############
       - name: Retrieve DB_HOST from Terraform outputs
         id: terraform-output
         run: |
           cd infra
           terraform init
+
           echo "Retrieving DB_HOST..."
           DB_HOST=$(terraform output -raw db_host)
           echo "DB_HOST=$DB_HOST" >> $GITHUB_ENV
+
+          echo "Retrieving backend_alb_url..."
+          BACKEND_URL=$(terraform output -raw backend_alb_url)
+          echo "BACKEND_URL=$BACKEND_URL" >> $GITHUB_ENV
+
+          echo "Retrieving alb_url..."
+          FRONTEND_URL=$(terraform output -raw alb_url)
+          echo "FRONTEND_URL=$FRONTEND_URL" >> $GITHUB_ENV
+
+          echo "Retrieving db_name..."
+          DB_NAME=$(terraform output -raw db_name)
+          echo "DB_NAME=$DB_NAME" >> $GITHUB_ENV
+
+          echo "Retrieving db_password..."
+          DB_PASSWORD=$(terraform output -raw db_password)
+          echo "DB_PASSWORD=$DB_PASSWORD" >> $GITHUB_ENV
         env:
           TF_WORKSPACE: fullstack-terraform-template
 
+      ############
+      # Frontend #
+      ############
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: web/node-app/frontend
+            IMAGE_TAG: ${{ github.sha }}
+            BACKEND_URL: ${{ env.BACKEND_URL }}
+        run: |
+            cd frontend && docker build \
+              --build-arg BACKEND_URL=${BACKEND_URL} \
+              -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+            task-definition: infra/task-definitions/service.latest.json
+            container-name: frontend 
+            image: ${{ steps.build-image.outputs.image }}
+
+      - name: Update App Spec File
+        run: |
+          sed -ie "s/<CONTAINER_NAME>/$CONTAINER_NAME/" ./appspec.json
+          sed -ie "s/<CONTAINER_PORT>/$CONTAINER_PORT/" ./appspec.json
+        env:
+          CONTAINER_NAME: frontend 
+          CONTAINER_PORT: 3000
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: web-service-node-app-prod
+          cluster: web-cluster-node-app-prod
+          wait-for-service-stability: true
+          codedeploy-appspec: appspec.json
+          codedeploy-application: deployment-app-node-app-prod
+          codedeploy-deployment-group: deployment-group-node-app-prod
+
+      ###########
+      # Backend #
+      ###########
       - name: Build, tag, and push backend image to Amazon ECR
         id: build-backend-image
         env:
@@ -100,10 +122,10 @@ jobs:
             PORT: 5252
             DB_USER: postgres
             DB_HOST: ${{ env.DB_HOST }} 
-            DB_NAME: postgres
-            DB_PASSWORD: postgres
+            DB_NAME: ${{ env.DB_NAME }}
+            DB_PASSWORD: ${{ env.DB_PASSWORD }}
             DB_PORT: 5432
-            CORS_ORIGIN: http://web-dev-frontendlb-894222867.us-east-1.elb.amazonaws.com
+            CORS_ORIGIN: ${{ env.FRONTEND_URL }}
         run: |
             cd backend && docker build \
               --build-arg PORT=${PORT} \
