@@ -71,7 +71,8 @@ jobs:
       # Frontend #
       ############
       - name: Echo BACKEND_URL before frontend build
-        run: echo "Echo BACKEND_URL before frontend build: ${{ env.BACKEND_URL }}"
+        run: |
+          echo "Echo BACKEND_URL before frontend build: ${{ env.BACKEND_URL }}"
         
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
