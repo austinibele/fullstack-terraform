@@ -10,10 +10,6 @@ variable "env" {
   default = "prod"
 }
 
-# variable "db_password" {
-#   sensitive = true
-# }
-
 variable "db_name" {
   sensitive = true
   default = "postgres"

@@ -37,8 +37,10 @@ output "db_host" {
   value       = module.db.db_instance_address
 }
 
-
-
+output "db_name" {
+  sensitive = true
+  value = var.db_name
+}
 
 output "db_port" {
   value = var.db_port
