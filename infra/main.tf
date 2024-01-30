@@ -30,6 +30,9 @@ locals {
   ecs_log_group = "/aws/ecs/${var.project_id}-${var.env}"
   # Retention in days
   ecs_log_retention = 1
+
+  # AWS Secrets Manager
+  db_creds = jsondecode(data.aws_secretsmanager_secret_version.creds.secret_string)
 }
 
 module "networking" {

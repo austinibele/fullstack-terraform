@@ -110,6 +110,24 @@ jobs:
           codedeploy-application: deployment-app-node-app-prod
           codedeploy-deployment-group: deployment-group-node-app-prod
 
+      ####################
+      # Retrieve Secrets #
+      ####################
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Retrieve secrets from AWS Secrets Manager
+        id: retrieve-secrets
+        run: |
+          SECRET_STRING=$(aws secretsmanager get-secret-value --secret-id Masteraccoundb --query SecretString --output text)
+          DB_USERNAME=$(echo $SECRET_STRING | jq -r .username)
+          DB_PASSWORD=$(echo $SECRET_STRING | jq -r .password)
+          echo "DB_USERNAME=$DB_USERNAME" >> $GITHUB_ENV
+          echo "DB_PASSWORD=$DB_PASSWORD" >> $GITHUB_ENV
+        env:
+          AWS_REGION: us-east-1
+        shell: bash
+
       ###########
       # Backend #
       ###########

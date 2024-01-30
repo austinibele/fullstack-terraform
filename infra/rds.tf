@@ -5,6 +5,8 @@ module "db" {
 
   manage_master_user_password = false
 
+  apply_immediately = true
+
   # DB subnet group
   create_db_subnet_group = true
   subnet_ids             = module.networking.private_subnets[*].id
@@ -13,8 +15,8 @@ module "db" {
   vpc_security_group_ids = [module.postgres_security_group.security_group_id]
 
   db_name = var.db_name
-  username       = var.db_username
-  password       = var.db_password
+  username       = local.db_creds.username
+  password       = local.db_creds.password
   port           = var.db_port
   identifier     = "${var.project_id}-${var.env}-db"
 

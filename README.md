@@ -1,21 +1,37 @@
 # Fullstack AWS Terraform CI/CD Template
 Frontend and Backend services on ECS Fargate, Load Balancers, Private Postgres RDS Instance with Bastion EC2 Instance, and CI/CD with Terraform Cloud and GitHub Actions
 
-# TODO
-1. Use AWS Secrets Manager to store DB creds. Then pull creds from AWS Secrets Manager during GitHub Actions build. https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_github.html
-2. Allow AWS to "manage_master_user_password" for RDS instance. We should have multiple DB users for different tasks. https://aws.amazon.com/blogs/database/managing-postgresql-users-and-roles/
+# Instructions
 
-
-# Current Configuration: Keep secrets in separate tfvars file 
-1. This file should not be commited to github
-2. It is better use a encrypted secrets manager (see TODO [should use HashiCorp Vault])
-
+### Deploy the Infrastructure
 ```
 cd infra
-mv example.secrets.tfvars secrets.tfvars
-terraform plan -var-file="secrets.tfvars"
-terraform apply --auto-approve -var-file="secrets.tfvars"
+terraform init
+terraform plan
+terraform apply
 ```
+
+### Deploy the App
+To deploy the app, commit or merge to main to kick off the actions workflow
+
+# OUTSTANDING:
+    - Secret Rotation: GitHub can't do this. So we need to use AWS secrets.
+        - Solution: Use GitHub Actions "Schedule" trigger to trigger lambda to change creds, retreive new creds, and deploy new images
+
+
+
+# In Docker, use Secrets, NOT ENV Vars
+https://docs.docker.com/compose/environment-variables/set-environment-variables/#:~:text=Don't%20use%20environment%20variables,Use%20secrets%20instead.
+
+# DB SECURITY
+TODO: Create NON-ROOT DB users to do different DB tasks
+
+# TODO
+1. Use AWS Secrets Manager to store DB creds. Then pull creds from AWS Secrets Manager during GitHub Actions build. https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_github.html
+2. Allow AWS to "manage_master_user_password" for RDS instance. We should have multiple DB users for different tasks. https://aws.amazon.com/blogs/database/managing-postgresql-users-a
+nd-roles/
+
+
 
 # Dyanmically set ENV Vars in GitHub Actions from Terraform Output
 First, you must migrate your terraform state to Terraform Cloud: https://developer.hashicorp.com/terraform/tutorials/cloud/cloud-migrate
