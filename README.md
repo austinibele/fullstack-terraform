@@ -7,6 +7,7 @@ Frontend and Backend services on ECS Fargate, Load Balancers, Private Postgres R
 After copying the infra/ directory to your project, update the following:
 1. 'project-id' in infra/variable.tf
 2. 'awslog-group' in infra/task-definitions/service.latest.json and backend-service.latest.json
+3. 'organization' and 'workspace' in terraform section of main.tf
 
 ### Deploy the Infrastructure
 ```
