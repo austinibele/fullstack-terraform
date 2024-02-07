@@ -3,6 +3,11 @@ Frontend and Backend services on ECS Fargate, Load Balancers, Private Postgres R
 
 # Instructions
 
+### Adapting for your Project
+After copying the infra/ directory to your project, update the following:
+1. 'project-id' in infra/variable.tf
+2. 'awslog-group' in infra/task-definitions/service.latest.json and backend-service.latest.json
+
 ### Deploy the Infrastructure
 ```
 cd infra
