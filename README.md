@@ -10,6 +10,7 @@ After copying the infra/ directory to your project, update the following:
 3. 'organization' and 'workspace' in terraform section of main.tf
 4. 'TF_WORkSPACE' env var in .github/workflows/main.yml
 5. 'CONTAINER_NAME' references in .github/workflows/main.yml
+6. AWS Secret name in .github/workflows/main.yml
 
 ### Deploy the Infrastructure
 ```
